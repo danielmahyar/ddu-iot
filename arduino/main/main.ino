@@ -5,6 +5,7 @@
 */
 
 #include <Arduino.h>
+#include <ESP32Servo.h>
 #if defined(ESP32)
   #include <WiFi.h>
 #elif defined(ESP8266)
@@ -19,8 +20,8 @@
 #include "addons/RTDBHelper.h"
 
 // Insert your network credentials
-#define WIFI_SSID "Waoo4920_8DSY"
-#define WIFI_PASSWORD "wtkm4348"
+#define WIFI_SSID "Daniel - iPhone"
+#define WIFI_PASSWORD "Daddyyyy"
 
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyCEVmy83es4KlCdI3qKDmXr5eDln0EIRrQ"
@@ -34,13 +35,17 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
+Servo gate;
+int servoPin = 2;
+
 unsigned long sendDataPrevMillis = 0;
-int intValue;
+bool openGate;
 float floatValue;
 bool signupOK = false;
 
 void setup() {
   Serial.begin(115200);
+  setupServo() ;
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -75,26 +80,30 @@ void setup() {
 }
 
 void loop() {
-  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)) {
-    sendDataPrevMillis = millis();
-    if (Firebase.RTDB.getInt(&fbdo, "/test/int")) {
-      if (fbdo.dataType() == "int") {
-        intValue = fbdo.intData();
-        Serial.println(intValue);
+  if (Firebase.RTDB.getFloat(&fbdo, "/gate/open")) {
+    if (fbdo.dataType() == "boolean") {
+      openGate = fbdo.boolData();
+      if(openGate == true){
+        gate.write(90);
+      } else {
+         gate.write(8);
       }
-    }
-    else {
-      Serial.println(fbdo.errorReason());
-    }
-    
-    if (Firebase.RTDB.getFloat(&fbdo, "/test/float")) {
-      if (fbdo.dataType() == "float") {
-        floatValue = fbdo.floatData();
-        Serial.println(floatValue);
-      }
-    }
-    else {
-      Serial.println(fbdo.errorReason());
+      Serial.println(floatValue);
     }
   }
+  else {
+    Serial.println(fbdo.errorReason());
+    gate.write(8);
+  }
+  
+}
+
+void setupServo(){
+  // Allow allocation of all timers
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+  gate.setPeriodHertz(50);    // standard 50 hz servo
+  gate.attach(servoPin, 500, 2400); // attaches the servo on pin 18 to the servo object
 }
