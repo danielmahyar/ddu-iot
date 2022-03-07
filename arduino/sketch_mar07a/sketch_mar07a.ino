@@ -21,8 +21,11 @@ void setup() {
 
 void loop() {
   char key = keypad.getKey();
-
-  if (key) {
-    Serial.println(key);
+  if(key){
+    if(key == '#'){
+      Serial.println("Checking code");
+    } else {
+      Serial.println(key);
+    }
   }
 }
