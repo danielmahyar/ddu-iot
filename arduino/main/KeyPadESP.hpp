@@ -13,6 +13,7 @@ enum Terminal_State {
 class KeyPadESP {
   private:
       Keypad *terminalPad;
+      char current;
       Terminal_State state;
       char keys[ROW_NUM][COLUMN_NUM] = {
         {'1', '2', '3', 'A'},
@@ -23,6 +24,7 @@ class KeyPadESP {
   public:
     KeyPadESP(byte *pin_rows, byte *pin_column) {
       this->terminalPad = new Keypad( makeKeymap(this->keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
+      this->current = '\0';
       this->state = PASS_WRITE;
     }
     ~KeyPadESP(){
@@ -30,18 +32,22 @@ class KeyPadESP {
     }
 
     char readKey(){
-      return terminalPad->getKey();
+      char tempChar = terminalPad->getKey();
       this->state = PASS_WRITE;
+      this->current = tempChar;
+      return tempChar;
     }
 
-    bool enterPressed(char pressed){
+    bool enterPressed(){
       this->state = PASS_ENTER;
-      return pressed == '#';
+      return this->current == '#';
     }
 
-    bool resetPassPressed(char pressed){
-      this->state = PASS_RESET;
-      return pressed == '*';
+    bool resetPassPressed(){
+      char tempChar = terminalPad->getKey();
+      this->state = PASS_WRITE;
+      this->current = tempChar;
+      return tempChar == '*';
     }
     
 };
