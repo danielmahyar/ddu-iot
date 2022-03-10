@@ -45,6 +45,7 @@ void loop() {
     if (keyFromUser) {
       lcdReset();
       if (terminalPad.enterPressed()) {
+        Serial.println("Checking Passwords");
         lcd.print("Checking passwords");
         String code1 = db.getHouse1Code();
         String code2 = db.getHouse2Code();
@@ -52,6 +53,7 @@ void loop() {
         if (checkPass != 0) {
           lcdReset();
           lcd.print("Authorized");
+          Serial.println("Authorized");
           lcd.setCursor(1,0);
           lcd.print("Go to House: " + String(checkPass));
 

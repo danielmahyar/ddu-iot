@@ -67,9 +67,11 @@ class Database {
 
     String getHouse1Code() {
       if (this->conReady()) {
+        Serial.println("Getting data for house 1: ");
         if (Firebase.RTDB.getString(&fbdo, "/houses/house-1/password")) {
           if (fbdo.dataType() == "string") {
             String stringData = fbdo.stringData();
+            Serial.println(stringData);
             return stringData;
           } else {
             String nul = "";
@@ -86,9 +88,11 @@ class Database {
 
     String getHouse2Code() {
       if (this->conReady()) {
+        Serial.println("Getting data for house 2: ");
         if (Firebase.RTDB.getString(&fbdo, "/houses/house-2/password")) {
           if (fbdo.dataType() == "string") {
             String stringData = fbdo.stringData();
+            Serial.println("Getting data for house 2: ");
             return stringData;
           } else {
             String nul = "";
