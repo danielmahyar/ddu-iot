@@ -38,33 +38,24 @@ void setup() {
   setupLcdScreen();
 }
 
-/*
-    Pseudo Code:
-    if key != NO_KEY:
-      if key == #:
-        String codes[] = getHouseCodeFirebase(); //Only acces to internet
-        for(auto firebaseCode : codes):
-          if firebaseCode == code:
-            openGate();
-      else
-        code += key;
-    else
-      screen("Welcome");
-*/
+
 void loop() {
   if (db.conReady()) {
     char keyFromUser = terminalPad.readKey();
     if (keyFromUser) {
-//      lcd.clear();
-//      lcd.setCursor(0, 0);
+      lcdReset();
       if (terminalPad.enterPressed()) {
-        Serial.println(code);
+        lcd.print("Checking passwords");
         String code1 = db.getHouse1Code();
         String code2 = db.getHouse2Code();
         int checkPass = handleCheckPassword(code, code1, code2);
-        if(checkPass != 0){
-          Serial.println("You have entered the correct");
-          Serial.println(checkPass);
+        if (checkPass != 0) {
+          lcdReset();
+          lcd.print("Authorized");
+          lcd.setCursor(1,0);
+          lcd.print("Go to House: " + String(checkPass));
+
+          gate.open();
         } else {
           Serial.println("Wrong passwords");
         }
@@ -73,17 +64,17 @@ void loop() {
         code = "";
       } else {
         code += keyFromUser;
-//        lcd.print(code);
+        lcd.print(code);
         Serial.println(keyFromUser);
       }
     }
   } else {
-    lcd.setCursor(0,0);
+    lcd.setCursor(0, 0);
   }
 }
 
-int handleCheckPassword(String USER_CODE, String HOUSE_1, String HOUSE_2){
-  if(USER_CODE == HOUSE_1)
+int handleCheckPassword(String USER_CODE, String HOUSE_1, String HOUSE_2) {
+  if (USER_CODE == HOUSE_1)
     return 1;
   else if (USER_CODE == HOUSE_2)
     return 2;
@@ -96,6 +87,11 @@ void setupLcdScreen() {
   lcd.init();
   // turn on LCD backlight
   lcd.backlight();
+}
+
+void lcdReset() {
+   lcd.clear();
+   lcd.setCursor(0,0);
 }
 
 // Function to scroll text

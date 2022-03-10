@@ -26,4 +26,10 @@ class Gate {
       servo->attach(servoPin, 500, 2400); // attaches the servo on pin 18 to the servo object
       servo->write(GATE_CLOSED);
     }
+
+    void open(){
+      servo->write(GATE_OPENED);
+      delay(6000);
+      servo->write(GATE_CLOSED);
+    }
 };
