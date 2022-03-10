@@ -5,18 +5,13 @@
 */
 
 #include <Arduino.h>
-#include <ESP32Servo.h>
 #include "KeyPadESP.hpp"
 #include "Database.hpp"
+#include "Gate.hpp"
 #include <LiquidCrystal_I2C.h>
 
 Database db = Database();
-
-Servo gate;
-int servoPin = 2;
-bool openGate;
-const int GATE_CLOSED_POS = 8;
-const int GATE_OPEN_POS = 90;
+Gate gate = Gate();
 
 unsigned long sendDataPrevMillis = 0;
 float floatValue;
@@ -36,10 +31,9 @@ KeyPadESP terminalPad = KeyPadESP(pin_rows, pin_column);
 
 String code;
 
-
 void setup() {
   Serial.begin(115200);
-  setupServo();
+  gate.setupServo();
   db.setupCon();
   setupLcdScreen();
 }
@@ -65,6 +59,16 @@ void loop() {
 //      lcd.setCursor(0, 0);
       if (terminalPad.enterPressed()) {
         Serial.println(code);
+        String code1 = db.getHouse1Code();
+        String code2 = db.getHouse2Code();
+        int checkPass = handleCheckPassword(code, code1, code2);
+        if(checkPass != 0){
+          Serial.println("You have entered the correct");
+          Serial.println(checkPass);
+        } else {
+          Serial.println("Wrong passwords");
+        }
+        code = "";
       } else if (terminalPad.resetPassPressed()) {
         code = "";
       } else {
@@ -78,19 +82,13 @@ void loop() {
   }
 }
 
-bool firebaseReadyCheck() {
-  return (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0));
-}
-
-void setupServo() {
-  // Allow allocation of all timers
-  ESP32PWM::allocateTimer(0);
-  ESP32PWM::allocateTimer(1);
-  ESP32PWM::allocateTimer(2);
-  ESP32PWM::allocateTimer(3);
-  gate.setPeriodHertz(50);    // standard 50 hz servo
-  gate.attach(servoPin, 500, 2400); // attaches the servo on pin 18 to the servo object
-  gate.write(GATE_CLOSED_POS);
+int handleCheckPassword(String USER_CODE, String HOUSE_1, String HOUSE_2){
+  if(USER_CODE == HOUSE_1)
+    return 1;
+  else if (USER_CODE == HOUSE_2)
+    return 2;
+  else
+    return 0;
 }
 
 void setupLcdScreen() {

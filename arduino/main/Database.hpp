@@ -80,9 +80,7 @@ class Database {
           String nul = "";
           return nul;
         }
-      } else {
-        String nul = "";
-        return nul;
+
       }
     }
 
