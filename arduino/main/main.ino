@@ -9,6 +9,7 @@
 #include "Database.hpp"
 #include "Gate.hpp"
 #include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal.h>
 
 Database db = Database();
 Gate gate = Gate();
@@ -24,6 +25,7 @@ const int lcdRows = 2;
 // set LCD address, number of columns and rows
 // if you don't know your display address, run an I2C scanner sketch
 LiquidCrystal_I2C lcd(0x3F, lcdColumns, lcdRows);
+// LiquidCrystal lcd(4, 5, 18, 19, 21, 22);
 
 byte pin_rows[ROW_NUM] = {12, 14, 27, 26}; // GIOP18, GIOP5, GIOP17, GIOP16 connect to the row pins
 byte pin_column[COLUMN_NUM] = {25, 33, 32, 35};  // GIOP4, GIOP0, GIOP2 connect to the column pins
@@ -33,9 +35,15 @@ String code;
 
 void setup() {
   Serial.begin(115200);
-  gate.setupServo();
-  db.setupCon();
   setupLcdScreen();
+  lcdReset();
+  lcd.print("Servo Start");
+  gate.setupServo();
+  lcdReset();
+  lcd.print("Database...");
+  db.setupCon();
+  lcdReset();
+  lcd.print("All good");
 }
 
 
@@ -45,8 +53,9 @@ void loop() {
     if (keyFromUser) {
       lcdReset();
       if (terminalPad.enterPressed()) {
+        Serial.println(code);
         Serial.println("Checking Passwords");
-        lcd.print("Checking passwords");
+        lcd.print("Checking...");
         String code1 = db.getHouse1Code();
         String code2 = db.getHouse2Code();
         int checkPass = handleCheckPassword(code, code1, code2);
@@ -56,10 +65,11 @@ void loop() {
           Serial.println("Authorized");
           lcd.setCursor(1,0);
           lcd.print("Go to House: " + String(checkPass));
-
           gate.open();
         } else {
           Serial.println("Wrong passwords");
+          lcdReset();
+          lcd.print("Wrong pass");
         }
         code = "";
       } else if (terminalPad.resetPassPressed()) {
@@ -86,6 +96,7 @@ int handleCheckPassword(String USER_CODE, String HOUSE_1, String HOUSE_2) {
 
 void setupLcdScreen() {
   // initialize LCD
+  // lcd.begin(16, 2);
   lcd.init();
   // turn on LCD backlight
   lcd.backlight();
